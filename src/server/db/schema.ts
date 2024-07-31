@@ -4,15 +4,15 @@ import {
   integer,
   pgTable,
   primaryKey,
+  real,
+  serial,
   text,
   timestamp,
-  uuid,
   varchar,
 } from 'drizzle-orm/pg-core'
 import postgres from 'postgres'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import type { AdapterAccountType } from 'next-auth/adapters'
-import { relations } from 'drizzle-orm'
 
 const connectionString = 'postgres://postgres:123456@localhost:5432/postgres'
 const pool = postgres(connectionString, { max: 1 })
@@ -83,3 +83,18 @@ export const authenticators = pgTable('authenticator', {
     columns: [authenticator.userId, authenticator.credentialID],
   }),
 }))
+
+const HLPriceSchema = {
+  id: serial('id').primaryKey(),
+  high: real('high').default(0),
+  low: real('low').default(0),
+  amplitude: real('amplitude').default(0),
+  date: varchar('date', { length: 10 }).notNull(),
+  timestamp: timestamp('timestamp', { mode: 'date' }).notNull(),
+}
+
+export const btcPriceInfoDay = pgTable('btcPriceInfoDay', HLPriceSchema)
+
+export const btcPriceInfoWeek = pgTable('btcPriceInfoWeek', HLPriceSchema)
+
+export const btcPriceInfoMonth = pgTable('btcPriceInfoMonth', HLPriceSchema)

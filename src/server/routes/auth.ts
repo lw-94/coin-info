@@ -1,7 +1,7 @@
-import { authProcedure, router } from '@/utils/trpcRouter'
+import { procedure, router } from '@/utils/trpcRouter'
 
 export const authRoutes = router({
-  authKey: authProcedure.query(async () => {
+  authKey: procedure.query(async () => {
     return process.env.AUTH_SECRET
   }),
 })

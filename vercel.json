@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/coin/updateEveryday/BTCUSDT",
-      "schedule": "15 16 * * *"
+      "schedule": "30 8 * * *"
     }
   ]
 }

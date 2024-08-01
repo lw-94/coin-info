@@ -1,6 +1,5 @@
 import {
   boolean,
-  index,
   integer,
   pgTable,
   primaryKey,
@@ -68,7 +67,7 @@ export const verificationTokens = pgTable('verificationToken', {
 }))
 
 export const authenticators = pgTable('authenticator', {
-  credentialID: text('credentialID').notNull().unique(),
+  credentialId: text('credentialID').notNull().unique(),
   userId: text('userId')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
@@ -80,21 +79,26 @@ export const authenticators = pgTable('authenticator', {
   transports: text('transports'),
 }, authenticator => ({
   compositePK: primaryKey({
-    columns: [authenticator.userId, authenticator.credentialID],
+    columns: [authenticator.userId, authenticator.credentialId],
   }),
 }))
 
-const HLPriceSchema = {
-  id: serial('id').primaryKey(),
-  high: real('high').default(0),
-  low: real('low').default(0),
-  amplitude: real('amplitude').default(0),
-  date: varchar('date', { length: 10 }).notNull(),
-  timestamp: timestamp('timestamp', { mode: 'date' }).notNull(),
+// 公用的需要用function返回
+function createHLPriceSchema() {
+  return {
+    id: serial('id').primaryKey(),
+    high: real('high').default(0),
+    low: real('low').default(0),
+    amplitude: real('amplitude').default(0),
+    date: varchar('date', { length: 10 }).notNull(),
+    timestamp: timestamp('timestamp', { mode: 'date' }).notNull().unique(),
+    createAt: timestamp('createAt', { mode: 'date' }).notNull().defaultNow(),
+    updateAt: timestamp('updateAt', { mode: 'date' }).notNull().defaultNow(),
+  }
 }
 
-export const btcPriceInfoDay = pgTable('btcPriceInfoDay', HLPriceSchema)
+export const btcPriceInfoDay = pgTable('btcPriceInfoDay', createHLPriceSchema())
 
-export const btcPriceInfoWeek = pgTable('btcPriceInfoWeek', HLPriceSchema)
+export const btcPriceInfoWeek = pgTable('btcPriceInfoWeek', createHLPriceSchema())
 
-export const btcPriceInfoMonth = pgTable('btcPriceInfoMonth', HLPriceSchema)
+export const btcPriceInfoMonth = pgTable('btcPriceInfoMonth', createHLPriceSchema())

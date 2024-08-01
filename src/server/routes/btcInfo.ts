@@ -32,6 +32,15 @@ export const btcInfoRoutes = router({
     return result
   }),
 
+  export: procedure.input(z.array(z.any())).mutation(async ({ input }) => {
+    const workbook = XLSX.utils.book_new()
+    const worksheet = XLSX.utils.json_to_sheet(input)
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1')
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })
+    return buffer
+  }),
+
+  //
   addDataToDb: procedure.mutation(async () => {
     XLSX.set_fs(fs)
     const excelFilePath = path.join(process.cwd(), 'public', 'hl_price.xlsx')
@@ -52,12 +61,26 @@ export const btcInfoRoutes = router({
     const dataWeek: ItemInfo[] = XLSX.utils.sheet_to_json(worksheetWeek)
     const dataMonth: ItemInfo[] = XLSX.utils.sheet_to_json(worksheetMonth)
 
-    // await dbClient.insert(btcPriceInfoDay).values(dataDay.map(item => ({
-    //   high: Number(item.high),
-    //   low: Number(item.low),
-    //   amplitude: item.amplitude,
-    //   date: item.date,
-    //   timestamp: new Date(item.timestamp),
-    // })))
+    await dbClient.insert(btcPriceInfoDay).values(dataDay.map(item => ({
+      high: Number(item.high),
+      low: Number(item.low),
+      amplitude: item.amplitude,
+      date: item.date,
+      timestamp: new Date(item.timestamp),
+    })))
+    await dbClient.insert(btcPriceInfoWeek).values(dataWeek.map(item => ({
+      high: Number(item.high),
+      low: Number(item.low),
+      amplitude: item.amplitude,
+      date: item.date,
+      timestamp: new Date(item.timestamp),
+    })))
+    await dbClient.insert(btcPriceInfoMonth).values(dataMonth.map(item => ({
+      high: Number(item.high),
+      low: Number(item.low),
+      amplitude: item.amplitude,
+      date: item.date,
+      timestamp: new Date(item.timestamp),
+    })))
   }),
 })

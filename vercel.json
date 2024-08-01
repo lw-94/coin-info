@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/coin/updateEveryday/BTCUSDT",
+      "schedule": "15 16 * * *"
+    }
+  ]
+}

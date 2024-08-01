@@ -98,9 +98,19 @@ export default function HomePage() {
     setCurrentTabIdx(idx)
   }
 
-  const addInfo = () => {
-    // trpcPureClient.btcInfo.add.mutate()
+  const addInfo = async () => {
     // trpcPureClient.btcInfo.addDataToDb.mutate()
+
+    // const res = await trpcPureClient.btcInfo.export.mutate(btcList ?? [])
+    // const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    // const url = URL.createObjectURL(blob)
+    // const link = document.createElement('a')
+    // link.href = url
+    // link.setAttribute('download', 'data.xlsx')
+    // document.body.appendChild(link)
+    // link.click()
+    // link.remove()
+    // URL.revokeObjectURL(url)
   }
 
   return (

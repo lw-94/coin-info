@@ -1,20 +1,18 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import {
   File,
   LineChart,
   List,
   ListFilter,
-  MoreHorizontal,
   PanelLeft,
   Settings,
 } from 'lucide-react'
 
-import { useEffect, useState } from 'react'
-import { Badge } from '@/components/ui/badge'
+import { useState } from 'react'
 
+import * as XLSX from 'xlsx'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -56,6 +54,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { trpcClientReact, trpcPureClient } from '@/utils/trpcClient'
 import { cn } from '@/lib/utils'
+import { exportXlsx } from '@/utils/utils'
 
 export default function HomePage() {
   const menu = [
@@ -98,19 +97,12 @@ export default function HomePage() {
     setCurrentTabIdx(idx)
   }
 
-  const addInfo = async () => {
-    // trpcPureClient.btcInfo.addDataToDb.mutate()
+  const addFileDataToDb = async () => {
+    await trpcPureClient.btcInfo.addDataToDb.mutate()
+  }
 
-    // const res = await trpcPureClient.btcInfo.export.mutate(btcList ?? [])
-    // const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-    // const url = URL.createObjectURL(blob)
-    // const link = document.createElement('a')
-    // link.href = url
-    // link.setAttribute('download', 'data.xlsx')
-    // document.body.appendChild(link)
-    // link.click()
-    // link.remove()
-    // URL.revokeObjectURL(url)
+  const exportFile = async () => {
+    exportXlsx(btcList, 'data.xlsx')
   }
 
   return (
@@ -213,7 +205,7 @@ export default function HomePage() {
                     </DropdownMenuCheckboxItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <Button size="sm" variant="outline" className="h-8 gap-1" onClick={addInfo}>
+                <Button size="sm" variant="outline" className="h-8 gap-1" onClick={exportFile}>
                   <File className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     Export

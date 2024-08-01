@@ -32,14 +32,6 @@ export const btcInfoRoutes = router({
     return result
   }),
 
-  export: procedure.input(z.array(z.any())).mutation(async ({ input }) => {
-    const workbook = XLSX.utils.book_new()
-    const worksheet = XLSX.utils.json_to_sheet(input)
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1')
-    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })
-    return buffer
-  }),
-
   //
   addDataToDb: procedure.mutation(async () => {
     XLSX.set_fs(fs)

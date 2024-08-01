@@ -32,6 +32,10 @@ export const btcInfoRoutes = router({
     return result
   }),
 
+  listBTCInfoAll: procedure.query(async () => {
+    return dbClient.select().from(btcPriceInfoDay)
+  }),
+
   //
   addDataToDb: procedure.mutation(async () => {
     XLSX.set_fs(fs)

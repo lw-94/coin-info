@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import {
   File,
+  FileSpreadsheet,
   LineChart,
   List,
   ListFilter,
@@ -11,8 +12,6 @@ import {
 } from 'lucide-react'
 
 import { useState } from 'react'
-
-import * as XLSX from 'xlsx'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -54,7 +53,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { trpcClientReact, trpcPureClient } from '@/utils/trpcClient'
 import { cn } from '@/lib/utils'
-import { exportXlsx } from '@/utils/utils'
+import { exportXlsx, exportXlsxWithMultipleSheets } from '@/utils/utils'
 
 export default function HomePage() {
   const menu = [
@@ -103,6 +102,11 @@ export default function HomePage() {
 
   const exportFile = async () => {
     exportXlsx(btcList, 'data.xlsx')
+  }
+
+  const exportAllFile = async () => {
+    const data = {}
+    exportXlsxWithMultipleSheets(data, 'data.xlsx')
   }
 
   return (
@@ -209,6 +213,12 @@ export default function HomePage() {
                   <File className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     Export
+                  </span>
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 gap-1" onClick={exportAllFile}>
+                  <FileSpreadsheet className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Export All
                   </span>
                 </Button>
               </div>

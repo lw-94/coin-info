@@ -2,12 +2,9 @@
 
 import Link from 'next/link'
 import {
-  ChevronLeft,
-  ChevronRight,
   Edit,
   File,
   List,
-  ListFilter,
   PanelLeft,
   Settings,
 } from 'lucide-react'
@@ -25,15 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+
 import {
   Table,
   TableBody,
@@ -54,20 +43,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination'
+
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { trpcClientReact } from '@/utils/trpcClient'
 import { cn } from '@/lib/utils'
 import { exportXlsx } from '@/utils/utils'
 import { CusPagination } from '@/components/cus-pagination'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function HomePage() {
   const menu = [
@@ -106,12 +88,13 @@ export default function HomePage() {
   // })
 
   const [pageNo, setPageNo] = useState(1)
+  const pageSize = 10
   const { data: listBTCInfo, refetch: refetchListBTC } = trpcClientReact.btcInfo.listBTCInfoPaginated.useQuery({
     period: currentTab.period,
     pageNo,
-    pageSize: 10,
+    pageSize,
   })
-  const { data: listBTC, total, totalPage } = listBTCInfo ?? { data: [], total: 0, totalPage: 0 }
+  const { data: listBTC, total, totalPage } = listBTCInfo ?? { data: undefined, total: 0, totalPage: 0 }
 
   const onTabChange = (val: string) => {
     const idx = periodType.findIndex(item => item.period === val)
@@ -268,6 +251,7 @@ export default function HomePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -278,25 +262,29 @@ export default function HomePage() {
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
-                      {
-                        listBTC?.map(item => (
-                          <TableRow key={item.id}>
-                            <TableCell>{dateFormat(item.date)}</TableCell>
-                            <TableCell>{item.high}</TableCell>
-                            <TableCell>{item.low}</TableCell>
-                            <TableCell>{amplitudeFormat(item.amplitude ?? 0)}</TableCell>
-                            <TableCell>
-                              <EditDialog data={item} periodType={currentTab.period} onEditCallback={refetchListBTC}>
-                                <Button variant="ghost" size="icon">
-                                  <Edit />
-                                </Button>
-                              </EditDialog>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      }
-                    </TableBody>
+                    {(listBTC?.length ?? 0) > 0
+                      ? (
+                          <TableBody>
+                            {
+                              listBTC?.map(item => (
+                                <TableRow key={item.id}>
+                                  <TableCell>{dateFormat(item.date)}</TableCell>
+                                  <TableCell>{item.high}</TableCell>
+                                  <TableCell>{item.low}</TableCell>
+                                  <TableCell>{amplitudeFormat(item.amplitude ?? 0)}</TableCell>
+                                  <TableCell>
+                                    <EditDialog data={item} periodType={currentTab.period} onEditCallback={refetchListBTC}>
+                                      <Button variant="ghost" size="icon">
+                                        <Edit />
+                                      </Button>
+                                    </EditDialog>
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            }
+                          </TableBody>
+                        )
+                      : null}
                   </Table>
                 </CardContent>
                 <CardFooter className="flex flex-col">

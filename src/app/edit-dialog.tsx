@@ -68,7 +68,8 @@ export function EditDialog({
       toast.success('Edit success')
     }
     catch (error) {
-
+      console.log('🚀 ~ handleSaveChange ~ error:', error)
+      toast.error('Edit failed')
     }
   }
 

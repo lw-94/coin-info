@@ -82,9 +82,13 @@ function generatePaginationLinks(currentPage: number, totalPage: number, onPageC
       )
     }
     if (currentPage > 2 && currentPage < totalPage - 1) {
-      pages.push(<PaginationEllipsis />)
       pages.push(
-        <PaginationItem key={currentPage}>
+        <PaginationItem key="p-ellipsis-prev">
+          <PaginationEllipsis />
+        </PaginationItem>,
+      )
+      pages.push(
+        <PaginationItem key="p-current">
           <PaginationLink
             onClick={() => onPageChange(currentPage)}
             isActive
@@ -95,7 +99,11 @@ function generatePaginationLinks(currentPage: number, totalPage: number, onPageC
         </PaginationItem>,
       )
     }
-    pages.push(<PaginationEllipsis />)
+    pages.push((
+      <PaginationItem key="p-ellipsis-next">
+        <PaginationEllipsis />
+      </PaginationItem>
+    ))
     for (let i = totalPage - 1; i <= totalPage; i++) {
       pages.push(
         <PaginationItem key={i}>

@@ -102,6 +102,7 @@ export default function HomePage() {
     exportXlsx(ListBTC, 'data.xlsx')
   }
 
+  //
   const dateFormat = (date: string) => {
     if (currentTabIdx === 0) {
       return date
@@ -114,6 +115,10 @@ export default function HomePage() {
       const endDate = dayjs(date).add(1, 'month').subtract(1, 'day').format('YYYY-MM-DD')
       return `${date} ~ ${endDate}`
     }
+  }
+
+  const amplitudeFormat = (amplitude: number) => {
+    return `${(amplitude * 100).toFixed(2)}%`
   }
 
   return (
@@ -199,7 +204,7 @@ export default function HomePage() {
                 ))}
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
-                <DropdownMenu>
+                {/* <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="h-8 gap-1">
                       <ListFilter className="h-3.5 w-3.5" />
@@ -215,7 +220,7 @@ export default function HomePage() {
                       all
                     </DropdownMenuCheckboxItem>
                   </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu> */}
                 <Button size="sm" variant="outline" className="h-8 gap-1" onClick={exportFile}>
                   <File className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -230,7 +235,10 @@ export default function HomePage() {
                 <CardHeader>
                   <CardTitle>BTC</CardTitle>
                   <CardDescription>
-                    BTC price info of days.
+                    BTC amplitude of
+                    {' '}
+                    {currentTab.label}
+                    .
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -251,7 +259,7 @@ export default function HomePage() {
                             <TableCell>{dateFormat(item.date)}</TableCell>
                             <TableCell>{item.high}</TableCell>
                             <TableCell>{item.low}</TableCell>
-                            <TableCell>{item.amplitude}</TableCell>
+                            <TableCell>{amplitudeFormat(item.amplitude ?? 0)}</TableCell>
                             <TableCell>
                               <EditDialog data={item} periodType={currentTab.period} onEditCallback={refetchListBTC}>
                                 <Button variant="ghost" size="icon">

@@ -1,15 +1,16 @@
 import path from 'node:path'
 import * as fs from 'node:fs'
 import * as XLSX from 'xlsx'
-import { desc } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import z from 'zod'
 import { dbClient } from '../db/db'
 import { btcPriceInfoDay, btcPriceInfoMonth, btcPriceInfoWeek } from '../db/schema'
 import { procedure, router } from '@/utils/trpcRouter'
+import { coinInfoFieldPick } from '@/utils/utils'
 
 export const btcInfoRoutes = router({
   listBTCInfo: procedure.input(z.object({
-    period: z.enum(['1d', '1w', '1m']).default('1d'),
+    period: z.enum(['1d', '1w', '1M']).default('1d'),
     limit: z.number().default(10),
   })).query(async ({ input }) => {
     const { period, limit } = input
@@ -25,15 +26,53 @@ export const btcInfoRoutes = router({
       case '1w':
         result = await dbClient.query.btcPriceInfoWeek.findMany(params)
         break
-      case '1m':
+      case '1M':
         result = await dbClient.query.btcPriceInfoMonth.findMany(params)
         break
     }
+
+    result = result.map(coinInfoFieldPick)
     return result
   }),
 
-  listBTCInfoAll: procedure.query(async () => {
-    return dbClient.select().from(btcPriceInfoDay)
+  listBTCInfoAll: procedure.mutation(async () => {
+    const dayPromise = dbClient.select().from(btcPriceInfoDay).orderBy(desc(btcPriceInfoDay.timestamp))
+    const weekPromise = dbClient.select().from(btcPriceInfoWeek).orderBy(desc(btcPriceInfoWeek.timestamp))
+    const monthPromise = dbClient.select().from(btcPriceInfoMonth).orderBy(desc(btcPriceInfoMonth.timestamp))
+
+    const [day, week, month] = await Promise.all([dayPromise, weekPromise, monthPromise])
+    return {
+      day: day.map(coinInfoFieldPick),
+      week: week.map(coinInfoFieldPick),
+      month: month.map(coinInfoFieldPick),
+    }
+  }),
+
+  edit: procedure.input(z.object({
+    type: z.enum(['1d', '1w', '1M']),
+    id: z.number(),
+    high: z.number(),
+    low: z.number(),
+    amplitude: z.number(),
+  })).mutation(async ({ input }) => {
+    const { type, id, high, low, amplitude } = input
+    const map = {
+      '1d': btcPriceInfoDay,
+      '1w': btcPriceInfoWeek,
+      '1M': btcPriceInfoMonth,
+    }
+    try {
+      await dbClient
+        .update(map[type])
+        .set({ high, low, amplitude })
+        .where(eq(map[type].id, id))
+    }
+    catch (error: any) {
+      console.error('🚀 ~ edit ~ error:', error.message)
+      return false
+    }
+
+    return true
   }),
 
   //

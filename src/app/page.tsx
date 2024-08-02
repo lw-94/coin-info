@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import {
+  Edit,
   File,
   FileSpreadsheet,
   LineChart,
@@ -12,6 +13,7 @@ import {
 } from 'lucide-react'
 
 import { useState } from 'react'
+import { EditDialog } from './edit-dialog'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -54,6 +56,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { trpcClientReact, trpcPureClient } from '@/utils/trpcClient'
 import { cn } from '@/lib/utils'
 import { exportXlsx, exportXlsxWithMultipleSheets } from '@/utils/utils'
+import type { btcPriceInfoDay } from '@/server/db/schema'
 
 export default function HomePage() {
   const menu = [
@@ -69,7 +72,7 @@ export default function HomePage() {
     },
   ]
 
-  const periodType: { label: string, period: '1d' | '1w' | '1m' }[] = [
+  const periodType: { label: string, period: '1d' | '1w' | '1M' }[] = [
     {
       label: 'day',
       period: '1d',
@@ -80,14 +83,14 @@ export default function HomePage() {
     },
     {
       label: 'month',
-      period: '1m',
+      period: '1M',
     },
   ]
 
   const [currentTabIdx, setCurrentTabIdx] = useState(0)
   const currentTab = periodType[currentTabIdx]
 
-  const { data: btcList } = trpcClientReact.btcInfo.listBTCInfo.useQuery({
+  const { data: ListBTC, refetch: refetchListBTC } = trpcClientReact.btcInfo.listBTCInfo.useQuery({
     period: currentTab.period,
   })
 
@@ -101,11 +104,11 @@ export default function HomePage() {
   }
 
   const exportFile = async () => {
-    exportXlsx(btcList, 'data.xlsx')
+    exportXlsx(ListBTC, 'data.xlsx')
   }
 
   const exportAllFile = async () => {
-    const data = {}
+    const data = await trpcPureClient.btcInfo.listBTCInfoAll.mutate()
     exportXlsxWithMultipleSheets(data, 'data.xlsx')
   }
 
@@ -239,16 +242,24 @@ export default function HomePage() {
                         <TableHead>High</TableHead>
                         <TableHead>Low</TableHead>
                         <TableHead>Amplitude</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {
-                        btcList?.map(item => (
+                        ListBTC?.map(item => (
                           <TableRow key={item.id}>
                             <TableCell>{item.date}</TableCell>
                             <TableCell>{item.high}</TableCell>
                             <TableCell>{item.low}</TableCell>
                             <TableCell>{item.amplitude}</TableCell>
+                            <TableCell>
+                              <EditDialog data={item} periodType={currentTab.period} onEditCallback={refetchListBTC}>
+                                <Button variant="ghost" size="icon">
+                                  <Edit />
+                                </Button>
+                              </EditDialog>
+                            </TableCell>
                           </TableRow>
                         ))
                       }
@@ -263,7 +274,7 @@ export default function HomePage() {
                     {' '}
                     of
                     {' '}
-                    <strong>{btcList?.length}</strong>
+                    <strong>{ListBTC?.length}</strong>
                     {' '}
                     products
                   </div>

@@ -12,6 +12,7 @@ export default antfu({
   rules: {
     'no-console': 1,
     'unused-imports/no-unused-vars': 1,
+    'regexp/no-unused-capturing-group': 1,
     'node/prefer-global/process': 0,
     'ts/no-require-imports': 0,
   },

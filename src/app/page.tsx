@@ -14,6 +14,7 @@ import {
 
 import { useState } from 'react'
 import { EditDialog } from './edit-dialog'
+import { ExportAllAlertDialog } from './export-all-alert-dialog'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -99,9 +100,9 @@ export default function HomePage() {
     setCurrentTabIdx(idx)
   }
 
-  const addFileDataToDb = async () => {
-    await trpcPureClient.btcInfo.addDataToDb.mutate()
-  }
+  // const addFileDataToDb = async () => {
+  //   await trpcPureClient.btcInfo.addDataToDb.mutate()
+  // }
 
   const exportFile = async () => {
     exportXlsx(ListBTC, 'data.xlsx')
@@ -218,12 +219,7 @@ export default function HomePage() {
                     Export
                   </span>
                 </Button>
-                <Button size="sm" variant="outline" className="h-8 gap-1" onClick={exportAllFile}>
-                  <FileSpreadsheet className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Export All
-                  </span>
-                </Button>
+                <ExportAllAlertDialog />
               </div>
             </div>
             <TabsContent value={periodType[currentTabIdx].period}>

@@ -83,18 +83,15 @@ export default function HomePage() {
   const [currentTabIdx, setCurrentTabIdx] = useState(0)
   const currentTab = periodType[currentTabIdx]
 
-  // const { data: ListBTC, refetch: refetchListBTC } = trpcClientReact.btcInfo.listBTCInfo.useQuery({
-  //   period: currentTab.period,
-  // })
-
   const [pageNo, setPageNo] = useState(1)
   const pageSize = 10
-  const { data: listBTCInfo, refetch: refetchListBTC } = trpcClientReact.btcInfo.listBTCInfoPaginated.useQuery({
+  const { data: listBTCInfo, refetch: refetchListBTC, isLoading } = trpcClientReact.btcInfo.listBTCInfoPaginated.useQuery({
     period: currentTab.period,
     pageNo,
     pageSize,
   })
   const { data: listBTC, total, totalPage } = listBTCInfo ?? { data: undefined, total: 0, totalPage: 0 }
+  const zeroData = listBTC?.length === 0
 
   const onTabChange = (val: string) => {
     const idx = periodType.findIndex(item => item.period === val)
@@ -262,30 +259,53 @@ export default function HomePage() {
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
-                    {(listBTC?.length ?? 0) > 0
-                      ? (
-                          <TableBody>
-                            {
-                              listBTC?.map(item => (
-                                <TableRow key={item.id}>
-                                  <TableCell>{dateFormat(item.date)}</TableCell>
-                                  <TableCell>{item.high}</TableCell>
-                                  <TableCell>{item.low}</TableCell>
-                                  <TableCell>{amplitudeFormat(item.amplitude ?? 0)}</TableCell>
-                                  <TableCell>
-                                    <EditDialog data={item} periodType={currentTab.period} onEditCallback={refetchListBTC}>
-                                      <Button variant="ghost" size="icon">
-                                        <Edit />
-                                      </Button>
-                                    </EditDialog>
-                                  </TableCell>
-                                </TableRow>
-                              ))
-                            }
-                          </TableBody>
-                        )
-                      : null}
+                    {
+                      isLoading
+                        ? null
+                        : (
+                            <TableBody>
+                              {
+                                listBTC?.map(item => (
+                                  <TableRow key={item.id}>
+                                    <TableCell>{dateFormat(item.date)}</TableCell>
+                                    <TableCell>{item.high}</TableCell>
+                                    <TableCell>{item.low}</TableCell>
+                                    <TableCell>{amplitudeFormat(item.amplitude ?? 0)}</TableCell>
+                                    <TableCell>
+                                      <EditDialog data={item} periodType={currentTab.period} onEditCallback={refetchListBTC}>
+                                        <Button variant="ghost" size="icon">
+                                          <Edit />
+                                        </Button>
+                                      </EditDialog>
+                                    </TableCell>
+                                  </TableRow>
+                                ))
+                              }
+                            </TableBody>
+                          )
+                    }
+                    {
+                      zeroData
+                        ? (
+                            <TableBody>
+                              <TableRow>
+                                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                                  暂无数据
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          )
+                        : null
+                    }
                   </Table>
+                  {
+                    isLoading
+                    && (
+                      <div className="mt-2 flex flex-col gap-2">
+                        {Array(pageSize).fill(0).map((_, i) => <Skeleton key={`ske-${i}`} className="h-8" />)}
+                      </div>
+                    )
+                  }
                 </CardContent>
                 <CardFooter className="flex flex-col">
                   <CusPagination currentPage={pageNo} totalPage={totalPage} onPageChange={handlePageChange} />

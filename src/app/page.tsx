@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import {
+  ChevronLeft,
+  ChevronRight,
   Edit,
   File,
   List,
@@ -52,10 +54,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { trpcClientReact } from '@/utils/trpcClient'
 import { cn } from '@/lib/utils'
 import { exportXlsx } from '@/utils/utils'
+import { CusPagination } from '@/components/cus-pagination'
 
 export default function HomePage() {
   const menu = [
@@ -89,17 +101,31 @@ export default function HomePage() {
   const [currentTabIdx, setCurrentTabIdx] = useState(0)
   const currentTab = periodType[currentTabIdx]
 
-  const { data: ListBTC, refetch: refetchListBTC } = trpcClientReact.btcInfo.listBTCInfo.useQuery({
+  // const { data: ListBTC, refetch: refetchListBTC } = trpcClientReact.btcInfo.listBTCInfo.useQuery({
+  //   period: currentTab.period,
+  // })
+
+  const [pageNo, setPageNo] = useState(1)
+  const { data: listBTCInfo, refetch: refetchListBTC } = trpcClientReact.btcInfo.listBTCInfoPaginated.useQuery({
     period: currentTab.period,
+    pageNo,
+    pageSize: 10,
   })
+  const { data: listBTC, total, totalPage } = listBTCInfo ?? { data: [], total: 0, totalPage: 0 }
 
   const onTabChange = (val: string) => {
     const idx = periodType.findIndex(item => item.period === val)
     setCurrentTabIdx(idx)
+    setPageNo(1)
   }
 
   const exportFile = async () => {
-    exportXlsx(ListBTC, 'data.xlsx')
+    exportXlsx(listBTC, 'data.xlsx')
+  }
+
+  const handlePageChange = (pageNo: number) => {
+    setPageNo(pageNo)
+    // refetchListBTC()
   }
 
   //
@@ -254,7 +280,7 @@ export default function HomePage() {
                     </TableHeader>
                     <TableBody>
                       {
-                        ListBTC?.map(item => (
+                        listBTC?.map(item => (
                           <TableRow key={item.id}>
                             <TableCell>{dateFormat(item.date)}</TableCell>
                             <TableCell>{item.high}</TableCell>
@@ -273,17 +299,12 @@ export default function HomePage() {
                     </TableBody>
                   </Table>
                 </CardContent>
-                <CardFooter>
-                  <div className="text-xs text-muted-foreground">
-                    Showing
+                <CardFooter className="flex flex-col">
+                  <CusPagination currentPage={pageNo} totalPage={totalPage} onPageChange={handlePageChange} />
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    <strong>{total}</strong>
                     {' '}
-                    <strong>1-10</strong>
-                    {' '}
-                    of
-                    {' '}
-                    <strong>{ListBTC?.length}</strong>
-                    {' '}
-                    products
+                    条数据
                   </div>
                 </CardFooter>
               </Card>

@@ -1,7 +1,7 @@
 import path from 'node:path'
 import * as fs from 'node:fs'
 import * as XLSX from 'xlsx'
-import { desc, eq } from 'drizzle-orm'
+import { count, desc, eq } from 'drizzle-orm'
 import z from 'zod'
 import { dbClient } from '../db/db'
 import { btcPriceInfoDay, btcPriceInfoMonth, btcPriceInfoWeek } from '../db/schema'
@@ -45,6 +45,58 @@ export const btcInfoRoutes = router({
       day: day.map(coinInfoFieldPick),
       week: week.map(coinInfoFieldPick),
       month: month.map(coinInfoFieldPick),
+    }
+  }),
+
+  listBTCInfoPaginated: procedure.input(z.object({
+    period: z.enum(['1d', '1w', '1M']).default('1d'),
+    pageNo: z.number().min(1).default(1),
+    pageSize: z.number().min(1).max(50).default(10),
+  })).query(async ({ input }) => {
+    const { period, pageNo, pageSize } = input
+
+    const paramsCommon = {
+      offset: (pageNo - 1) * pageSize,
+      limit: pageSize,
+    }
+    let result = []
+    let countInfo: {
+      count: number
+    }[]
+    switch (period) {
+      case '1d':
+        result = await dbClient.query.btcPriceInfoDay.findMany({
+          ...paramsCommon,
+          orderBy: [desc(btcPriceInfoDay.timestamp)],
+        })
+        countInfo = await dbClient.select({
+          count: count(),
+        }).from(btcPriceInfoDay).execute()
+        break
+      case '1w':
+        result = await dbClient.query.btcPriceInfoWeek.findMany({
+          ...paramsCommon,
+          orderBy: [desc(btcPriceInfoWeek.timestamp)],
+        })
+        countInfo = await dbClient.select({
+          count: count(),
+        }).from(btcPriceInfoWeek).execute()
+        break
+      case '1M':
+        result = await dbClient.query.btcPriceInfoMonth.findMany({
+          ...paramsCommon,
+          orderBy: [desc(btcPriceInfoMonth.timestamp)],
+        })
+        countInfo = await dbClient.select({
+          count: count(),
+        }).from(btcPriceInfoMonth).execute()
+        break
+    }
+
+    return {
+      data: result.map(coinInfoFieldPick),
+      total: countInfo[0].count,
+      totalPage: Math.ceil(countInfo[0].count / pageSize),
     }
   }),
 

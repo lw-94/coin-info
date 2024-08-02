@@ -4,8 +4,6 @@ import Link from 'next/link'
 import {
   Edit,
   File,
-  FileSpreadsheet,
-  LineChart,
   List,
   ListFilter,
   PanelLeft,
@@ -13,6 +11,7 @@ import {
 } from 'lucide-react'
 
 import { useState } from 'react'
+import dayjs from 'dayjs'
 import { EditDialog } from './edit-dialog'
 import { ExportAllAlertDialog } from './export-all-alert-dialog'
 import { Button } from '@/components/ui/button'
@@ -54,10 +53,9 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { trpcClientReact, trpcPureClient } from '@/utils/trpcClient'
+import { trpcClientReact } from '@/utils/trpcClient'
 import { cn } from '@/lib/utils'
-import { exportXlsx, exportXlsxWithMultipleSheets } from '@/utils/utils'
-import type { btcPriceInfoDay } from '@/server/db/schema'
+import { exportXlsx } from '@/utils/utils'
 
 export default function HomePage() {
   const menu = [
@@ -66,11 +64,11 @@ export default function HomePage() {
       name: 'Table',
       icon: <List className="h-5 w-5" />,
     },
-    {
-      path: '/kline',
-      name: 'Kline',
-      icon: <LineChart className="h-5 w-5" />,
-    },
+    // {
+    //   path: '/kline',
+    //   name: 'Kline',
+    //   icon: <LineChart className="h-5 w-5" />,
+    // },
   ]
 
   const periodType: { label: string, period: '1d' | '1w' | '1M' }[] = [
@@ -100,17 +98,22 @@ export default function HomePage() {
     setCurrentTabIdx(idx)
   }
 
-  // const addFileDataToDb = async () => {
-  //   await trpcPureClient.btcInfo.addDataToDb.mutate()
-  // }
-
   const exportFile = async () => {
     exportXlsx(ListBTC, 'data.xlsx')
   }
 
-  const exportAllFile = async () => {
-    const data = await trpcPureClient.btcInfo.listBTCInfoAll.mutate()
-    exportXlsxWithMultipleSheets(data, 'data.xlsx')
+  const dateFormat = (date: string) => {
+    if (currentTabIdx === 0) {
+      return date
+    }
+    if (currentTabIdx === 1) {
+      const endDate = dayjs(date).add(1, 'week').subtract(1, 'day').format('YYYY-MM-DD')
+      return `${date} ~ ${endDate}`
+    }
+    if (currentTabIdx === 2) {
+      const endDate = dayjs(date).add(1, 'month').subtract(1, 'day').format('YYYY-MM-DD')
+      return `${date} ~ ${endDate}`
+    }
   }
 
   return (
@@ -245,7 +248,7 @@ export default function HomePage() {
                       {
                         ListBTC?.map(item => (
                           <TableRow key={item.id}>
-                            <TableCell>{item.date}</TableCell>
+                            <TableCell>{dateFormat(item.date)}</TableCell>
                             <TableCell>{item.high}</TableCell>
                             <TableCell>{item.low}</TableCell>
                             <TableCell>{item.amplitude}</TableCell>

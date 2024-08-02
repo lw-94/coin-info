@@ -3,11 +3,11 @@ import type { NextRequest } from 'next/server'
 import { dbClient } from '@/server/db/db'
 import { btcPriceInfoDay, btcPriceInfoMonth, btcPriceInfoWeek } from '@/server/db/schema'
 
-async function getData(symbol: string, interval: '1d' | '1w' | '1M') {
+async function getData(symbol: string, interval: '1d' | '1w' | '1M', second = false) {
   const paramsDay = new URLSearchParams({
     symbol,
     interval,
-    limit: '1',
+    limit: second ? '2' : '1',
   })
   const url = `https://data-api.binance.vision/api/v3/klines?${paramsDay.toString()}`
   const res = await fetch(url).then(res => res.json())
@@ -25,11 +25,19 @@ function formatData(data: any) {
 }
 
 export async function GET(req: NextRequest, { params: { symbol } }: { params: { symbol: string } }) {
-  const promises = [getData(symbol, '1d'), getData(symbol, '1w'), getData(symbol, '1M')]
+  const promises = [getData(symbol, '1d', true), getData(symbol, '1w'), getData(symbol, '1M')]
   const [infoOfDay, infoOfWeek, infoOfMonth] = await Promise.all(promises)
 
   try {
-    await dbClient.insert(btcPriceInfoDay).values(infoOfDay).onConflictDoNothing()
+    await dbClient.insert(btcPriceInfoDay).values(infoOfDay).onConflictDoUpdate({
+      target: btcPriceInfoDay.timestamp,
+      set: {
+        high: infoOfDay.high,
+        low: infoOfDay.low,
+        amplitude: infoOfDay.amplitude,
+        updateAt: new Date(),
+      },
+    })
     await dbClient.insert(btcPriceInfoWeek).values(infoOfWeek).onConflictDoUpdate({
       target: btcPriceInfoWeek.timestamp,
       set: {

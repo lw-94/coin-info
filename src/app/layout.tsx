@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Coin Info',
-  description: 'Coin info demo',
+  description: 'Coin info',
 }
 
 export default async function RootLayout({

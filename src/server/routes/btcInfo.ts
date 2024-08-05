@@ -9,32 +9,6 @@ import { procedure, router } from '@/utils/trpcRouter'
 import { coinInfoFieldPick } from '@/utils/utils'
 
 export const btcInfoRoutes = router({
-  listBTCInfo: procedure.input(z.object({
-    period: z.enum(['1d', '1w', '1M']).default('1d'),
-    limit: z.number().default(10),
-  })).query(async ({ input }) => {
-    const { period, limit } = input
-    const params = {
-      orderBy: [desc(btcPriceInfoDay.timestamp)],
-      limit,
-    }
-    let result = []
-    switch (period) {
-      case '1d':
-        result = await dbClient.query.btcPriceInfoDay.findMany(params)
-        break
-      case '1w':
-        result = await dbClient.query.btcPriceInfoWeek.findMany(params)
-        break
-      case '1M':
-        result = await dbClient.query.btcPriceInfoMonth.findMany(params)
-        break
-    }
-
-    result = result.map(coinInfoFieldPick)
-    return result
-  }),
-
   listBTCInfoAll: procedure.mutation(async () => {
     const dayPromise = dbClient.select().from(btcPriceInfoDay).orderBy(desc(btcPriceInfoDay.timestamp))
     const weekPromise = dbClient.select().from(btcPriceInfoWeek).orderBy(desc(btcPriceInfoWeek.timestamp))
@@ -97,6 +71,44 @@ export const btcInfoRoutes = router({
       data: result.map(coinInfoFieldPick),
       total: countInfo[0].count,
       totalPage: Math.ceil(countInfo[0].count / pageSize),
+    }
+  }),
+
+  listBTCInfoAmplitudeInfo: procedure.input(z.object({
+    period: z.enum(['1d', '1w', '1M']).default('1d'),
+    limit: z.number().optional(),
+  })).query(async ({ input }) => {
+    const { period, limit } = input
+    const params: any = {
+      orderBy: [desc(btcPriceInfoDay.timestamp)],
+      limit,
+    }
+    let result = []
+    switch (period) {
+      case '1d':
+        result = await dbClient.query.btcPriceInfoDay.findMany(params)
+        break
+      case '1w':
+        result = await dbClient.query.btcPriceInfoWeek.findMany(params)
+        break
+      case '1M':
+        result = await dbClient.query.btcPriceInfoMonth.findMany(params)
+        break
+    }
+
+    const averageAmplitude = result.reduce((sum, item, index, array) => {
+      if (index === array.length - 1) {
+        return (sum + item.amplitude!) / array.length
+      }
+      return sum + item.amplitude!
+    }, 0)
+
+    // 计算result的属性amplitude的中位数
+    const medianAmplitude = result.sort((a, b) => a.amplitude! - b.amplitude!)[Math.floor(result.length / 2)].amplitude
+
+    return {
+      averageAmplitude,
+      medianAmplitude,
     }
   }),
 

@@ -44,7 +44,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { trpcClientReact } from '@/utils/trpcClient'
 import { cn } from '@/lib/utils'
 import { exportXlsx } from '@/utils/utils'
@@ -105,7 +105,6 @@ export default function HomePage() {
 
   const handlePageChange = (pageNo: number) => {
     setPageNo(pageNo)
-    // refetchListBTC()
   }
 
   //
@@ -177,6 +176,9 @@ export default function HomePage() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs">
+              {/* <SheetHeader>
+                <SheetTitle></SheetTitle>
+              </SheetHeader> */}
               <nav className="grid gap-6 text-lg font-medium">
                 {
                   menu.map(item => (
@@ -252,11 +254,11 @@ export default function HomePage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Date</TableHead>
+                        <TableHead className="hidden md:table-cell">Date</TableHead>
                         <TableHead>High</TableHead>
                         <TableHead>Low</TableHead>
                         <TableHead>Amplitude</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="hidden md:table-cell">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     {
@@ -267,11 +269,11 @@ export default function HomePage() {
                               {
                                 listBTC?.map(item => (
                                   <TableRow key={item.id}>
-                                    <TableCell>{dateFormat(item.date)}</TableCell>
+                                    <TableCell className="hidden md:table-cell">{dateFormat(item.date)}</TableCell>
                                     <TableCell>{item.high}</TableCell>
                                     <TableCell>{item.low}</TableCell>
                                     <TableCell>{amplitudeFormat(item.amplitude ?? 0)}</TableCell>
-                                    <TableCell>
+                                    <TableCell className="hidden md:table-cell">
                                       <EditDialog data={item} periodType={currentTab.period} onEditCallback={refetchListBTC}>
                                         <Button variant="ghost" size="icon">
                                           <Edit />

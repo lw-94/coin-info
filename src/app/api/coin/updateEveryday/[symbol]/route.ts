@@ -7,11 +7,17 @@ async function getData(symbol: string, interval: '1d' | '1w' | '1M', second = fa
   const paramsDay = new URLSearchParams({
     symbol,
     interval,
-    limit: second ? '2' : '1',
+    limit: '2',
   })
   const url = `https://data-api.binance.vision/api/v3/klines?${paramsDay.toString()}`
-  const res = await fetch(url).then(res => res.json())
-  return formatData(res[0])
+  const data = await fetch(url, {
+    cache: 'no-store', // 避免请求结果缓存
+  }).then((res) => {
+    console.log('🚀 ~ data ~ res.headers:', res.headers)
+    return res.json()
+  })
+  console.log('🚀 ~ getData ~ url, data:', url, data)
+  return [formatData(data[0]), formatData(data[1])]
 }
 
 function formatData(data: any) {
@@ -29,34 +35,54 @@ export async function GET(req: NextRequest, { params: { symbol } }: { params: { 
   const [infoOfDay, infoOfWeek, infoOfMonth] = await Promise.all(promises)
 
   try {
-    await dbClient.insert(btcPriceInfoDay).values(infoOfDay).onConflictDoUpdate({
+    // 每天更新昨日数据
+    await dbClient.insert(btcPriceInfoDay).values(infoOfDay[0]).onConflictDoUpdate({
       target: btcPriceInfoDay.timestamp,
       set: {
-        high: infoOfDay.high,
-        low: infoOfDay.low,
-        amplitude: infoOfDay.amplitude,
+        high: infoOfDay[0].high,
+        low: infoOfDay[0].low,
+        amplitude: infoOfDay[0].amplitude,
         updateAt: new Date(),
       },
     })
-    await dbClient.insert(btcPriceInfoWeek).values(infoOfWeek).onConflictDoUpdate({
+    // week 更新最近两条数据
+    await dbClient.insert(btcPriceInfoWeek).values(infoOfWeek[0]).onConflictDoUpdate({
       target: btcPriceInfoWeek.timestamp,
       set: {
-        high: infoOfWeek.high,
-        low: infoOfWeek.low,
-        amplitude: infoOfWeek.amplitude,
+        high: infoOfWeek[0].high,
+        low: infoOfWeek[0].low,
+        amplitude: infoOfWeek[0].amplitude,
         updateAt: new Date(),
       },
     })
-    await dbClient.insert(btcPriceInfoMonth).values(infoOfMonth).onConflictDoUpdate({
+    await dbClient.insert(btcPriceInfoWeek).values(infoOfWeek[1]).onConflictDoUpdate({
+      target: btcPriceInfoWeek.timestamp,
+      set: {
+        high: infoOfWeek[1].high,
+        low: infoOfWeek[1].low,
+        amplitude: infoOfWeek[1].amplitude,
+        updateAt: new Date(),
+      },
+    })
+    // month 更新最近两条数据
+    await dbClient.insert(btcPriceInfoMonth).values(infoOfMonth[0]).onConflictDoUpdate({
       target: btcPriceInfoMonth.timestamp,
       set: {
-        high: infoOfMonth.high,
-        low: infoOfMonth.low,
-        amplitude: infoOfMonth.amplitude,
+        high: infoOfMonth[0].high,
+        low: infoOfMonth[0].low,
+        amplitude: infoOfMonth[0].amplitude,
         updateAt: new Date(),
       },
     })
-    console.warn('🚀 ~ GET ~ success:')
+    await dbClient.insert(btcPriceInfoMonth).values(infoOfMonth[1]).onConflictDoUpdate({
+      target: btcPriceInfoMonth.timestamp,
+      set: {
+        high: infoOfMonth[1].high,
+        low: infoOfMonth[1].low,
+        amplitude: infoOfMonth[1].amplitude,
+        updateAt: new Date(),
+      },
+    })
   }
   catch (error: any) {
     console.error('🚀 ~ GET ~ error:', error.message)

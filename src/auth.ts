@@ -3,7 +3,7 @@ import GoogleProvider from 'next-auth/providers/google'
 import type { DefaultSession } from 'next-auth'
 import NextAuth from 'next-auth'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
-import { db } from '@/server/db/schema'
+import { dbClient } from './server/db/db'
 
 declare module 'next-auth' {
   interface Session extends DefaultSession {
@@ -13,7 +13,7 @@ declare module 'next-auth' {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: DrizzleAdapter(db),
+  adapter: DrizzleAdapter(dbClient),
   providers: [GithubProvider, GoogleProvider],
   // callbacks: {
   //   authorized: async ({ auth }) => {

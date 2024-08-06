@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { trpcClientReact } from '@/utils/trpcClient'
+import type { ChartConfig } from '@/components/ui/chart'
 
 export default function KlinePage() {
   const [date, setDate] = useState<DateRange | undefined>({
@@ -27,11 +28,10 @@ export default function KlinePage() {
   })
 
   const chartConfig = {
-    desktop: {
-      label: 'Desktop',
+    amplitude: {
       color: 'hsl(var(--chart-1))',
     },
-  }
+  } satisfies ChartConfig
 
   return (
     <div>

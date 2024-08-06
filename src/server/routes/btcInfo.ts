@@ -161,7 +161,7 @@ export const btcInfoRoutes = router({
     return true
   }),
 
-  //
+  // 用表格添加初始数据时使用
   addDataToDb: procedure.mutation(async () => {
     XLSX.set_fs(fs)
     const excelFilePath = path.join(process.cwd(), 'public', 'hl_price.xlsx')

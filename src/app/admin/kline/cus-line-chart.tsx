@@ -47,7 +47,7 @@ export function CusLineChart({
         />
         <Line
           dataKey="amplitude"
-          stroke="var(--color-desktop)"
+          stroke="var(--color-amplitude)"
           strokeWidth={2}
           dot={false}
         />

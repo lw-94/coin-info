@@ -5,10 +5,10 @@ import { neon } from '@neondatabase/serverless'
 import * as schema from './schema'
 
 function createDB() {
-  const neonDBUrl = process.env.NEON_DB_URL
+  const vercelDBUrl = process.env.VERCEL_DB_URL // vercel storage 使用的是neon服务
 
-  if (neonDBUrl) {
-    return drizzleNeon(neon(neonDBUrl), { schema })
+  if (vercelDBUrl) {
+    return drizzleNeon(neon(vercelDBUrl), { schema })
   }
   else {
     const queryClient = postgres('postgres://postgres:123456@0.0.0.0:5432/postgres')

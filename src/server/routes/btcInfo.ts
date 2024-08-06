@@ -127,6 +127,7 @@ export const btcInfoRoutes = router({
       where: and(start && gte(btcPriceInfoDay.timestamp, start), end && lte(btcPriceInfoDay.timestamp, end)),
       orderBy: [asc(btcPriceInfoDay.timestamp)],
     })
+
     return result.map(item => ({
       amplitude: item.amplitude!,
       date: item.date,

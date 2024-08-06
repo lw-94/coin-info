@@ -4,6 +4,6 @@ export default defineConfig({
   schema: './src/server/db/schema.ts',
   dialect: 'postgresql',
   dbCredentials: {
-    url: 'postgresql://coin-info_owner:UKj8dD9VzrEH@ep-sparkling-sound-a1m55d3y.ap-southeast-1.aws.neon.tech/coin-info?sslmode=require',
+    url: 'postgres://default:d3iW8qTrflcs@ep-young-bar-a1b6wmvf.ap-southeast-1.aws.neon.tech:5432/verceldb?sslmode=require',
   },
 })

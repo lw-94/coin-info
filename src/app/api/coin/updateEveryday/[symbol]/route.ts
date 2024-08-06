@@ -1,5 +1,5 @@
-import dayjs from 'dayjs'
 import type { NextRequest } from 'next/server'
+import { format } from 'date-fns'
 import { dbClient } from '@/server/db/db'
 import { btcPriceInfoDay, btcPriceInfoMonth, btcPriceInfoWeek } from '@/server/db/schema'
 import { PeriodType, type PeriodTypeValue } from '@/utils/globalVar'
@@ -14,17 +14,15 @@ async function getData(symbol: string, interval: PeriodTypeValue) {
   const data = await fetch(url, {
     cache: 'no-store', // 避免请求结果缓存
   }).then((res) => {
-    console.log('🚀 ~ data ~ res.headers:', res.headers)
     return res.json()
   })
-  console.log('🚀 ~ getData ~ url, data:', url, data)
   return [formatData(data[0]), formatData(data[1])]
 }
 
 function formatData(data: any) {
   return {
     timestamp: new Date(data[0]),
-    date: dayjs(data[0]).format('YYYY-MM-DD'),
+    date: format(data[0], 'yyyy-MM-dd'),
     high: Number(data[2]),
     low: Number(data[3]),
     amplitude: (data[2] - data[3]) / data[3],

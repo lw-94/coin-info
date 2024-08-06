@@ -1,7 +1,7 @@
 import path from 'node:path'
 import * as fs from 'node:fs'
 import * as XLSX from 'xlsx'
-import { count, desc, eq } from 'drizzle-orm'
+import { and, asc, count, desc, eq, gte, lte } from 'drizzle-orm'
 import z from 'zod'
 import { dbClient } from '../db/db'
 import { btcPriceInfoDay, btcPriceInfoMonth, btcPriceInfoWeek } from '../db/schema'
@@ -116,6 +116,21 @@ export const btcInfoRoutes = router({
       averageAmplitude,
       medianAmplitude,
     }
+  }),
+
+  listBTCInfoAmplitudeByDay: procedure.input(z.object({
+    start: z.string().transform(val => new Date(val)).optional(),
+    end: z.string().transform(val => new Date(val)).optional(),
+  })).query(async ({ input }) => {
+    const { start, end } = input
+    const result = await dbClient.query.btcPriceInfoDay.findMany({
+      where: and(start && gte(btcPriceInfoDay.timestamp, start), end && lte(btcPriceInfoDay.timestamp, end)),
+      orderBy: [asc(btcPriceInfoDay.timestamp)],
+    })
+    return result.map(item => ({
+      amplitude: item.amplitude!,
+      date: item.date,
+    }))
   }),
 
   edit: procedure.input(z.object({

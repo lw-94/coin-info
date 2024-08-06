@@ -2,13 +2,11 @@
 
 import {
   Activity,
-  DollarSign,
   Edit,
-  File,
 } from 'lucide-react'
 
-import dayjs from 'dayjs'
 import { useState } from 'react'
+import { addDays, addMonths, format, subDays } from 'date-fns'
 import { EditDialog } from '../edit-dialog'
 import { ExportAllAlertDialog } from '../export-all-alert-dialog'
 import { Button } from '@/components/ui/button'
@@ -37,7 +35,7 @@ import {
 } from '@/components/ui/tabs'
 import { CusPagination } from '@/components/cus-pagination'
 import { Skeleton } from '@/components/ui/skeleton'
-import { trpcClientReact, trpcPureClient } from '@/utils/trpcClient'
+import { trpcClientReact } from '@/utils/trpcClient'
 import { exportXlsx } from '@/utils/utils'
 import type { PeriodTypeValue } from '@/utils/globalVar'
 import { PeriodType } from '@/utils/globalVar'
@@ -123,11 +121,11 @@ export default function HLPricePage() {
       return date
     }
     if (currentTabIdx === 1) {
-      const endDate = dayjs(date).add(1, 'week').subtract(1, 'day').format('YYYY-MM-DD')
+      const endDate = format(addDays(date, 6), 'yyyy-MM-dd')
       return `${date} ~ ${endDate}`
     }
     if (currentTabIdx === 2) {
-      const endDate = dayjs(date).add(1, 'month').subtract(1, 'day').format('YYYY-MM-DD')
+      const endDate = format(subDays(addMonths(date, 1), 1), 'yyyy-MM-dd')
       return `${date} ~ ${endDate}`
     }
   }

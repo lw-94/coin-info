@@ -39,20 +39,22 @@ import { CusPagination } from '@/components/cus-pagination'
 import { Skeleton } from '@/components/ui/skeleton'
 import { trpcClientReact, trpcPureClient } from '@/utils/trpcClient'
 import { exportXlsx } from '@/utils/utils'
+import type { PeriodTypeValue } from '@/utils/globalVar'
+import { PeriodType } from '@/utils/globalVar'
 
 export default function HLPricePage() {
-  const periodType: { label: string, period: '1d' | '1w' | '1M' }[] = [
+  const periodType: { label: string, period: PeriodTypeValue }[] = [
     {
       label: 'day',
-      period: '1d',
+      period: PeriodType.Day,
     },
     {
       label: 'week',
-      period: '1w',
+      period: PeriodType.Week,
     },
     {
       label: 'month',
-      period: '1M',
+      period: PeriodType.Month,
     },
   ]
 
@@ -134,7 +136,7 @@ export default function HLPricePage() {
     return `${(amplitude * 100).toFixed(2)}%`
   }
   return (
-    <Tabs defaultValue="1d" onValueChange={onTabChange}>
+    <Tabs defaultValue={PeriodType.Day} onValueChange={onTabChange}>
       <div className="flex items-center">
         <TabsList>
           {periodType.map(item => (

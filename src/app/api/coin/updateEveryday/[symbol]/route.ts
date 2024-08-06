@@ -2,8 +2,9 @@ import dayjs from 'dayjs'
 import type { NextRequest } from 'next/server'
 import { dbClient } from '@/server/db/db'
 import { btcPriceInfoDay, btcPriceInfoMonth, btcPriceInfoWeek } from '@/server/db/schema'
+import { PeriodType, type PeriodTypeValue } from '@/utils/globalVar'
 
-async function getData(symbol: string, interval: '1d' | '1w' | '1M', second = false) {
+async function getData(symbol: string, interval: PeriodTypeValue) {
   const paramsDay = new URLSearchParams({
     symbol,
     interval,
@@ -31,7 +32,7 @@ function formatData(data: any) {
 }
 
 export async function GET(req: NextRequest, { params: { symbol } }: { params: { symbol: string } }) {
-  const promises = [getData(symbol, '1d', true), getData(symbol, '1w'), getData(symbol, '1M')]
+  const promises = [getData(symbol, PeriodType.Day), getData(symbol, PeriodType.Week), getData(symbol, PeriodType.Month)]
   const [infoOfDay, infoOfWeek, infoOfMonth] = await Promise.all(promises)
 
   try {

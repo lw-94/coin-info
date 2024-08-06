@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import type { btcPriceInfoDay } from '@/server/db/schema'
 import { isNumber } from '@/utils/utils'
 import { trpcPureClient } from '@/utils/trpcClient'
+import type { PeriodTypeValue } from '@/utils/globalVar'
 
 type EditItem = Omit<typeof btcPriceInfoDay.$inferSelect, 'createAt' | 'updateAt' | 'timestamp'>
 
@@ -25,7 +26,7 @@ export function EditDialog({
   children,
 }: {
   data: EditItem
-  periodType: '1d' | '1w' | '1M'
+  periodType: PeriodTypeValue
   onEditCallback: () => void
   children: React.ReactNode
 }) {

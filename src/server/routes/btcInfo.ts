@@ -7,6 +7,7 @@ import { dbClient } from '../db/db'
 import { btcPriceInfoDay, btcPriceInfoMonth, btcPriceInfoWeek } from '../db/schema'
 import { procedure, router } from '@/utils/trpcRouter'
 import { coinInfoFieldPick } from '@/utils/utils'
+import { PeriodType } from '@/utils/globalVar'
 
 export const btcInfoRoutes = router({
   listBTCInfoAll: procedure.mutation(async () => {
@@ -23,7 +24,7 @@ export const btcInfoRoutes = router({
   }),
 
   listBTCInfoPaginated: procedure.input(z.object({
-    period: z.enum(['1d', '1w', '1M']).default('1d'),
+    period: z.enum([PeriodType.Day, PeriodType.Week, PeriodType.Month]).default(PeriodType.Day),
     pageNo: z.number().min(1).default(1),
     pageSize: z.number().min(1).max(50).default(10),
   })).query(async ({ input }) => {
@@ -33,12 +34,12 @@ export const btcInfoRoutes = router({
       offset: (pageNo - 1) * pageSize,
       limit: pageSize,
     }
-    let result = []
+    let result: any[] = []
     let countInfo: {
       count: number
     }[]
     switch (period) {
-      case '1d':
+      case PeriodType.Day:
         result = await dbClient.query.btcPriceInfoDay.findMany({
           ...paramsCommon,
           orderBy: [desc(btcPriceInfoDay.timestamp)],
@@ -47,7 +48,7 @@ export const btcInfoRoutes = router({
           count: count(),
         }).from(btcPriceInfoDay).execute()
         break
-      case '1w':
+      case PeriodType.Week:
         result = await dbClient.query.btcPriceInfoWeek.findMany({
           ...paramsCommon,
           orderBy: [desc(btcPriceInfoWeek.timestamp)],
@@ -56,7 +57,7 @@ export const btcInfoRoutes = router({
           count: count(),
         }).from(btcPriceInfoWeek).execute()
         break
-      case '1M':
+      case PeriodType.Month:
         result = await dbClient.query.btcPriceInfoMonth.findMany({
           ...paramsCommon,
           orderBy: [desc(btcPriceInfoMonth.timestamp)],
@@ -75,24 +76,29 @@ export const btcInfoRoutes = router({
   }),
 
   listBTCInfoAmplitudeInfo: procedure.input(z.object({
-    period: z.enum(['1d', '1w', '1M']).default('1d'),
+    period: z.enum([PeriodType.Day, PeriodType.Week, PeriodType.Month]).default(PeriodType.Day),
     limit: z.number().optional(),
   })).query(async ({ input }) => {
     const { period, limit } = input
-    const params: any = {
-      orderBy: [desc(btcPriceInfoDay.timestamp)],
-      limit,
-    }
-    let result = []
+    let result: any[] = []
     switch (period) {
-      case '1d':
-        result = await dbClient.query.btcPriceInfoDay.findMany(params)
+      case PeriodType.Day:
+        result = await dbClient.query.btcPriceInfoDay.findMany({
+          orderBy: [desc(btcPriceInfoDay.timestamp)],
+          limit,
+        })
         break
-      case '1w':
-        result = await dbClient.query.btcPriceInfoWeek.findMany(params)
+      case PeriodType.Week:
+        result = await dbClient.query.btcPriceInfoWeek.findMany({
+          orderBy: [desc(btcPriceInfoWeek.timestamp)],
+          limit,
+        })
         break
-      case '1M':
-        result = await dbClient.query.btcPriceInfoMonth.findMany(params)
+      case PeriodType.Month:
+        result = await dbClient.query.btcPriceInfoMonth.findMany({
+          orderBy: [desc(btcPriceInfoMonth.timestamp)],
+          limit,
+        })
         break
     }
 
@@ -113,7 +119,7 @@ export const btcInfoRoutes = router({
   }),
 
   edit: procedure.input(z.object({
-    type: z.enum(['1d', '1w', '1M']),
+    type: z.enum([PeriodType.Day, PeriodType.Week, PeriodType.Month]),
     id: z.number(),
     high: z.number(),
     low: z.number(),
@@ -121,9 +127,9 @@ export const btcInfoRoutes = router({
   })).mutation(async ({ input }) => {
     const { type, id, high, low, amplitude } = input
     const map = {
-      '1d': btcPriceInfoDay,
-      '1w': btcPriceInfoWeek,
-      '1M': btcPriceInfoMonth,
+      [PeriodType.Day]: btcPriceInfoDay,
+      [PeriodType.Week]: btcPriceInfoWeek,
+      [PeriodType.Month]: btcPriceInfoMonth,
     }
     try {
       await dbClient

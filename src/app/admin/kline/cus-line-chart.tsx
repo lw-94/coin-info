@@ -20,6 +20,19 @@ export function CusLineChart({
   }[]
   chartConfig: ChartConfig
 }) {
+  const renderChartTooltipContentFormatter: any = (val: number, name: string, item: any) => {
+    const { color, payload } = item
+    return (
+      <div>
+        <p>{payload.date}</p>
+        <div className="flex items-center">
+          <i className="w-2 h-2 mr-1" style={{ backgroundColor: color }}></i>
+          <p>{`${name} ${(val * 100).toFixed(2)}%`}</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <ChartContainer config={chartConfig}>
       <LineChart
@@ -43,7 +56,7 @@ export function CusLineChart({
             stroke: '#ccc',
             strokeWidth: 1,
           }}
-          content={<ChartTooltipContent hideLabel labelClassName="text-red" />}
+          content={<ChartTooltipContent hideLabel formatter={renderChartTooltipContentFormatter} />}
         />
         <Line
           dataKey="amplitude"

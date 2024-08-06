@@ -34,7 +34,7 @@ export default function KlinePage() {
   } satisfies ChartConfig
 
   return (
-    <div>
+    <div className="flex flex-col h-full">
       <div className="flex gap-4">
         <DatePickerWithRange date={date} setDate={setDate} />
       </div>
@@ -58,7 +58,6 @@ export default function KlinePage() {
             </div>
           </CardFooter> */}
         </Card>
-
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
+import type { HTMLAttributes } from 'react'
 import type {
   ChartConfig,
 } from '@/components/ui/chart'
@@ -13,13 +14,14 @@ import {
 export function CusLineChart({
   chartData,
   chartConfig,
+  className,
 }: {
   chartData: {
     amplitude: number
     date: string
   }[]
   chartConfig: ChartConfig
-}) {
+} & HTMLAttributes<HTMLDivElement>) {
   const renderChartTooltipContentFormatter: any = (val: number, name: string, item: any) => {
     const { color, payload } = item
     return (
@@ -34,7 +36,7 @@ export function CusLineChart({
   }
 
   return (
-    <ChartContainer config={chartConfig}>
+    <ChartContainer config={chartConfig} className={className}>
       <LineChart
         accessibilityLayer
         data={chartData}

@@ -45,7 +45,9 @@ export default function KlinePage() {
             <CardDescription></CardDescription>
           </CardHeader>
           <CardContent>
-            <CusLineChart chartData={chartData ?? []} chartConfig={chartConfig} />
+            <div className="flex justify-center">
+              <CusLineChart chartData={chartData ?? []} chartConfig={chartConfig} className="w-full xl:w-4/5" />
+            </div>
           </CardContent>
           {/* <CardFooter className="flex-col items-start gap-2 text-sm">
             <div className="flex gap-2 font-medium leading-none">

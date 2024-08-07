@@ -1,7 +1,12 @@
+import type { ReactNode } from 'react'
 import { Button } from './ui/button'
 import { signOut } from '@/auth'
 
-export function SignOut() {
+export function SignOutButton({
+  children,
+}: {
+  children?: ReactNode
+}) {
   return (
     <form
       action={async () => {
@@ -9,7 +14,9 @@ export function SignOut() {
         await signOut()
       }}
     >
-      <Button type="submit">Signout</Button>
+      <Button type="submit">
+        {children || 'Logout'}
+      </Button>
     </form>
   )
 }

@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useWindowScroll } from 'react-use'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { ThemeButton } from '@/components/theme-button'
@@ -14,6 +15,11 @@ export default function HomePage() {
   useEffect(() => {
     setShowHeaderBorder(y > 40)
   }, [y])
+
+  // 跳转到后台
+  useEffect(() => {
+    redirect('/admin/hlprice')
+  })
 
   return (
     <div className="h-screen w-full">

@@ -89,24 +89,44 @@ export default function HLPricePage() {
     }
     return sum + item.amplitude!
   }, 0) ?? 0
+  const amplitudeTrimAverageCurrentPage = (() => {
+    if (listBTC?.length === 0) {
+      return 0
+    }
+    const amplitudeList = listBTC?.map(item => item.amplitude!)
+    const list = amplitudeList?.sort((a, b) => a - b)
+    const trimList = list?.slice(1, list.length - 1)
+    return trimList?.reduce((sum, item, i, array) => {
+      if (i === array.length - 1) {
+        return (sum + item) / array.length
+      }
+      return sum + item
+    }, 0) ?? 0
+  })()
   const cards = [
+    {
+      title: `振幅去极值平均值(${pageSize} ${currentTab.label})`,
+      icon: Activity,
+      value: `${(amplitudeTrimAverageCurrentPage * 100).toFixed(2)}%`,
+      desc: '当前页面数据的振幅去掉大小两个极值后的平均值',
+    },
     {
       title: `振幅平均值(${pageSize} ${currentTab.label})`,
       icon: Activity,
       value: `${(amplitudeAverageCurrentPage * 100).toFixed(2)}%`,
-      desc: '',
+      desc: '当前页面数据的振幅平均值',
     },
     {
       title: `振幅平均值(all)`,
       icon: Activity,
       value: `${((amplitudeInfo?.averageAmplitude ?? 0) * 100).toFixed(2)}%`,
-      desc: '',
+      desc: `所有${total}条数据的振幅平均值`,
     },
     {
       title: `振幅中位数(all)`,
       icon: Activity,
       value: `${((amplitudeInfo?.medianAmplitude ?? 0) * 100).toFixed(2)}%`,
-      desc: '',
+      desc: `所有${total}条数据的振幅中位数`,
     },
   ]
 

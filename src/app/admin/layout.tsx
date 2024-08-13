@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import {
+  Calculator,
   LineChart,
   List,
   PanelLeft,
@@ -27,6 +28,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       path: '/admin/kline',
       name: 'Kline',
       icon: <LineChart className="h-5 w-5" />,
+    },
+    {
+      path: '/admin/calculator',
+      name: 'Calc',
+      icon: <Calculator className="h-5 w-5" />,
     },
   ]
   return (

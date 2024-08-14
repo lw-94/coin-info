@@ -2,14 +2,11 @@
 
 import {
   Activity,
-  Edit,
 } from 'lucide-react'
 
 import { useState } from 'react'
-import { addDays, addMonths, format, subDays } from 'date-fns'
-import { EditDialog } from '../edit-dialog'
 import { ExportAllAlertDialog } from '../export-all-alert-dialog'
-import { Button } from '@/components/ui/button'
+import { DataTable } from './data-table'
 import {
   Card,
   CardContent,
@@ -18,15 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import {
   Tabs,
   TabsContent,
@@ -34,9 +22,7 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs'
 import { CusPagination } from '@/components/cus-pagination'
-import { Skeleton } from '@/components/ui/skeleton'
 import { trpcClientReact } from '@/utils/trpcClient'
-import { exportXlsx } from '@/utils/utils'
 import type { PeriodTypeValue } from '@/utils/globalVar'
 import { PeriodType } from '@/utils/globalVar'
 
@@ -67,7 +53,6 @@ export default function HLPricePage() {
     pageSize,
   })
   const { data: listBTC, total, totalPage } = listBTCInfo ?? { data: undefined, total: 0, totalPage: 0 }
-  const zeroData = listBTC?.length === 0
 
   const onTabChange = (val: string) => {
     const idx = periodType.findIndex(item => item.period === val)
@@ -75,9 +60,9 @@ export default function HLPricePage() {
     setPageNo(1)
   }
 
-  const exportFile = async () => {
-    exportXlsx(listBTC, 'data.xlsx')
-  }
+  // const exportFile = async () => {
+  //   exportXlsx(listBTC, 'data.xlsx')
+  // }
 
   // 振幅信息卡片
   const { data: amplitudeInfo } = trpcClientReact.btcInfo.listBTCInfoAmplitudeInfo.useQuery({
@@ -133,25 +118,6 @@ export default function HLPricePage() {
   // 分页
   const handlePageChange = (pageNo: number) => {
     setPageNo(pageNo)
-  }
-
-  // 表格数据格式化
-  const dateFormat = (date: string) => {
-    if (currentTabIdx === 0) {
-      return date
-    }
-    if (currentTabIdx === 1) {
-      const endDate = format(addDays(date, 6), 'yyyy-MM-dd')
-      return `${date} ~ ${endDate}`
-    }
-    if (currentTabIdx === 2) {
-      const endDate = format(subDays(addMonths(date, 1), 1), 'yyyy-MM-dd')
-      return `${date} ~ ${endDate}`
-    }
-  }
-
-  const amplitudeFormat = (amplitude: number) => {
-    return `${(amplitude * 100).toFixed(2)}%`
   }
   return (
     <Tabs defaultValue={PeriodType.Day} onValueChange={onTabChange}>
@@ -220,64 +186,7 @@ export default function HLPricePage() {
                 ))
               }
             </div>
-
-            <Table className="mt-4">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="hidden md:table-cell">Date</TableHead>
-                  <TableHead>High</TableHead>
-                  <TableHead>Low</TableHead>
-                  <TableHead>Amplitude</TableHead>
-                  <TableHead className="hidden md:table-cell">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              {
-                isLoading
-                  ? null
-                  : (
-                      <TableBody>
-                        {
-                          listBTC?.map(item => (
-                            <TableRow key={item.id}>
-                              <TableCell className="hidden md:table-cell">{dateFormat(item.date)}</TableCell>
-                              <TableCell>{item.high}</TableCell>
-                              <TableCell>{item.low}</TableCell>
-                              <TableCell>{amplitudeFormat(item.amplitude ?? 0)}</TableCell>
-                              <TableCell className="hidden md:table-cell">
-                                <EditDialog data={item} periodType={currentTab.period} onEditCallback={refetchListBTC}>
-                                  <Button variant="ghost" size="icon">
-                                    <Edit />
-                                  </Button>
-                                </EditDialog>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        }
-                      </TableBody>
-                    )
-              }
-              {
-                zeroData
-                  ? (
-                      <TableBody>
-                        <TableRow>
-                          <TableCell colSpan={5} className="text-center text-muted-foreground">
-                            暂无数据
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    )
-                  : null
-              }
-            </Table>
-            {
-              isLoading
-              && (
-                <div className="mt-2 flex flex-col gap-2">
-                  {Array(pageSize).fill(0).map((_, i) => <Skeleton key={`ske-${i}`} className="h-8" />)}
-                </div>
-              )
-            }
+            <DataTable isLoading={isLoading} list={listBTC} currentTab={currentTab} refetchList={refetchListBTC} skeletonCount={pageSize}></DataTable>
           </CardContent>
           <CardFooter className="flex flex-col">
             <CusPagination currentPage={pageNo} totalPage={totalPage} onPageChange={handlePageChange} />

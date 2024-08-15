@@ -79,7 +79,7 @@ export function GridStrategyAmplitude() {
 
   return (
     <CusFieldset title="振幅网格策略">
-      <div className="grid grid-cols-1 md:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <p>
             今日开盘价(
@@ -92,7 +92,7 @@ export function GridStrategyAmplitude() {
             {amplitudeYesterdayStr}
           </p>
         </div>
-        <Button variant="outline" onClick={handleSetHistoryData}>使用历史振幅数据</Button>
+        <Button variant="outline" onClick={handleSetHistoryData}>使用历史平均振幅数据</Button>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>

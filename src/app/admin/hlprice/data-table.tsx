@@ -57,7 +57,6 @@ export function DataTable({
 
   return (
     <>
-
       <Table className="mt-4">
         <TableHeader>
           <TableRow>
@@ -107,7 +106,6 @@ export function DataTable({
             : null
         }
       </Table>
-
       {
         isLoading
         && (

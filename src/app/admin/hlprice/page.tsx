@@ -25,6 +25,7 @@ import { CusPagination } from '@/components/cus-pagination'
 import { trpcClientReact } from '@/utils/trpcClient'
 import type { PeriodTypeValue } from '@/utils/globalVar'
 import { PeriodType } from '@/utils/globalVar'
+import { Button } from '@/components/ui/button'
 
 export default function HLPricePage() {
   const periodType: { label: string, period: PeriodTypeValue }[] = [
@@ -119,6 +120,7 @@ export default function HLPricePage() {
   const handlePageChange = (pageNo: number) => {
     setPageNo(pageNo)
   }
+
   return (
     <Tabs defaultValue={PeriodType.Day} onValueChange={onTabChange}>
       <div className="flex items-center">

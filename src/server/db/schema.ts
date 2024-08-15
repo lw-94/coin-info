@@ -1,6 +1,7 @@
 import {
   boolean,
   integer,
+  json,
   pgTable,
   primaryKey,
   real,
@@ -61,8 +62,8 @@ export const verificationTokens = pgTable('verificationToken', {
 }))
 
 export const authenticators = pgTable('authenticator', {
-  credentialId: text('credentialID').notNull().unique(),
-  userId: text('userId')
+  credentialId: text('credential_id').notNull().unique(),
+  userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   providerAccountId: text('providerAccountId').notNull(),
@@ -96,3 +97,10 @@ export const btcPriceInfoDay = pgTable('btcPriceInfoDay', createHLPriceSchema())
 export const btcPriceInfoWeek = pgTable('btcPriceInfoWeek', createHLPriceSchema())
 
 export const btcPriceInfoMonth = pgTable('btcPriceInfoMonth', createHLPriceSchema())
+
+export const config = pgTable('config', {
+  label: text('label').notNull().primaryKey(),
+  value: json('value').default({}),
+  createAt: timestamp('createAt', { mode: 'date' }).notNull().defaultNow(),
+  updateAt: timestamp('updateAt', { mode: 'date' }).notNull().defaultNow(),
+})

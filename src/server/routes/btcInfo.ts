@@ -1,6 +1,3 @@
-import path from 'node:path'
-import * as fs from 'node:fs'
-import * as XLSX from 'xlsx'
 import { and, asc, count, desc, eq, gte, lte } from 'drizzle-orm'
 import z from 'zod'
 import { dbClient } from '../db/db'
@@ -8,6 +5,7 @@ import { btcPriceInfoDay, btcPriceInfoMonth, btcPriceInfoWeek } from '../db/sche
 import { procedure, router } from '@/utils/trpcRouter'
 import { coinInfoFieldPick } from '@/utils/utils'
 import { PeriodType } from '@/utils/globalVar'
+import getAllPriceInfo from '@/utils/getAllPriceInfo'
 
 export const btcInfoRoutes = router({
   listBTCInfoAll: procedure.mutation(async () => {
@@ -102,6 +100,7 @@ export const btcInfoRoutes = router({
         break
     }
 
+    // 计算result的属性amplitude的平均值
     const averageAmplitude = result.reduce((sum, item, index, array) => {
       if (index === array.length - 1) {
         return (sum + item.amplitude!) / array.length
@@ -161,47 +160,43 @@ export const btcInfoRoutes = router({
     return true
   }),
 
-  // 用表格添加初始数据时使用
-  addDataToDb: procedure.mutation(async () => {
-    XLSX.set_fs(fs)
-    const excelFilePath = path.join(process.cwd(), 'public', 'hl_price.xlsx')
-    const workbook = XLSX.readFile(excelFilePath)
-    // 获取第一个工作表
-    const worksheetDay = workbook.Sheets[workbook.SheetNames[0]]
-    const worksheetWeek = workbook.Sheets[workbook.SheetNames[1]]
-    const worksheetMonth = workbook.Sheets[workbook.SheetNames[2]]
-    // 将工作表转换为 JSON 对象
-    interface ItemInfo {
-      timestamp: number
-      date: string
-      high: string
-      low: string
-      amplitude: number
+  todayOpenPrice: procedure.query(async () => {
+    const result = await dbClient.query.config.findFirst({
+      where: (config, { eq }) => eq(config.label, 'open_price'),
+    })
+    const priceInfo = await dbClient.query.btcPriceInfoDay.findFirst()
+    return {
+      ...result?.value as any,
+      amplitudeYesterday: priceInfo?.amplitude,
     }
-    const dataDay: ItemInfo[] = XLSX.utils.sheet_to_json(worksheetDay)
-    const dataWeek: ItemInfo[] = XLSX.utils.sheet_to_json(worksheetWeek)
-    const dataMonth: ItemInfo[] = XLSX.utils.sheet_to_json(worksheetMonth)
+  }),
 
-    await dbClient.insert(btcPriceInfoDay).values(dataDay.map(item => ({
-      high: Number(item.high),
-      low: Number(item.low),
-      amplitude: item.amplitude,
-      date: item.date,
-      timestamp: new Date(item.timestamp),
-    })))
-    await dbClient.insert(btcPriceInfoWeek).values(dataWeek.map(item => ({
-      high: Number(item.high),
-      low: Number(item.low),
-      amplitude: item.amplitude,
-      date: item.date,
-      timestamp: new Date(item.timestamp),
-    })))
-    await dbClient.insert(btcPriceInfoMonth).values(dataMonth.map(item => ({
-      high: Number(item.high),
-      low: Number(item.low),
-      amplitude: item.amplitude,
-      date: item.date,
-      timestamp: new Date(item.timestamp),
-    })))
+  // 添加初始数据时使用
+  initData: procedure.mutation(async () => {
+    const [dataDay, dataWeek, dataMonth] = await getAllPriceInfo()
+
+    function formatData(item: typeof dataDay[0]) {
+      return {
+        high: Number(item.high),
+        low: Number(item.low),
+        amplitude: item.amplitude,
+        date: item.date,
+        timestamp: new Date(item.timestamp),
+      }
+    }
+
+    const promiseList = [
+      dbClient.insert(btcPriceInfoDay).values(dataDay.map(item => formatData(item))),
+      dbClient.insert(btcPriceInfoWeek).values(dataWeek.map(item => formatData(item))),
+      dbClient.insert(btcPriceInfoMonth).values(dataMonth.map(item => formatData(item))),
+    ]
+    try {
+      await Promise.all(promiseList)
+    }
+    catch (error) {
+      console.log('🚀 ~ addDataToDb:procedure.mutation ~ error:', error)
+      return false
+    }
+    return true
   }),
 })
